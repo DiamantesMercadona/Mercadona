@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { getFacesRandomDependiente, getRandomPersona } from '@/utils/imagesUtils'
+import { ANIM_SPEED_COLA, ANIM_SPEED_REUBICACION } from '@/models/simulacionConfig.js'
 
 const GLTF_CAJA_PATH = '/assets/3dmodels/psx_cashier_stand/scene.gltf'
 const SIZE_CAJA = 1.5
@@ -203,7 +204,14 @@ export function animarReubicacionColas(cajasMesh, movimientos) {
       mesh.position.copy(localStart)
       destGroup.add(mesh)
       destGroup.userData.clientes.splice(posDestino, 0, mesh)
-      startAnimation(mesh, localStart.clone(), computeClientPos(posDestino), 0.025, easeInOut, null)
+      startAnimation(
+        mesh,
+        localStart.clone(),
+        computeClientPos(posDestino),
+        ANIM_SPEED_REUBICACION,
+        easeInOut,
+        null,
+      )
     }
   }
 }
@@ -217,13 +225,22 @@ export function sincronizarCola(grupo, cola) {
   while (existentes.length > cola.length) {
     const mesh = existentes.shift()
     const exitTarget = new THREE.Vector3(mesh.position.x, 1.5, EXIT_Z)
-    startAnimation(mesh, mesh.position.clone(), exitTarget, 0.022, easeIn, () => grupo.remove(mesh))
+    startAnimation(mesh, mesh.position.clone(), exitTarget, ANIM_SPEED_COLA, easeIn, () =>
+      grupo.remove(mesh),
+    )
   }
 
   // Advance remaining clients toward the caja after someone was served.
   if (huboBajas) {
     existentes.forEach((mesh, i) => {
-      startAnimation(mesh, mesh.position.clone(), computeClientPos(i), 0.022, easeInOut, null)
+      startAnimation(
+        mesh,
+        mesh.position.clone(),
+        computeClientPos(i),
+        ANIM_SPEED_COLA,
+        easeInOut,
+        null,
+      )
     })
   }
 
@@ -235,7 +252,7 @@ export function sincronizarCola(grupo, cola) {
     cliente.position.copy(entryPos)
     grupo.add(cliente)
     existentes.push(cliente)
-    startAnimation(cliente, entryPos, target, 0.022, easeInOut, null)
+    startAnimation(cliente, entryPos, target, ANIM_SPEED_COLA, easeInOut, null)
   }
 }
 

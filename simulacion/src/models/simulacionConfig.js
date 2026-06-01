@@ -38,3 +38,8 @@ export const MIN_TIME_CAJA_CARRITO = 300
 export const MAX_TIME_CAJA_CARRITO = 600
 
 export const PROBABILIDAD_CARRITO = 0
+
+//  Velocidades de animación 3D (fracción de recorrido por frame; menor = más lento)
+
+export const ANIM_SPEED_COLA = 0.022
+export const ANIM_SPEED_REUBICACION = 0.012
