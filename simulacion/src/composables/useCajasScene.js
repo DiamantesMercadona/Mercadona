@@ -154,6 +154,60 @@ export function actualizarCola(grupo, cola) {
   })
 }
 
+/**
+ * Animate clients moving laterally between cajas when queues are rebalanced.
+ * Must be called BEFORE the data model is mutated so that grupo.userData.clientes
+ * is already in sync with the new cola by the time sincronizarCola runs.
+ */
+export function animarReubicacionColas(cajasMesh, movimientos) {
+  if (!movimientos?.length) return
+
+  // Collect mesh references first (before any removal, so indices are stable)
+  const tareas = movimientos
+    .map((mov) => {
+      const sourceGroup = cajasMesh[mov.cajaOrigenIdx]
+      const destGroup = cajasMesh[mov.cajaDestinoIdx]
+      if (!sourceGroup || !destGroup) return null
+      const mesh = sourceGroup.userData.clientes[mov.posOrigen]
+      if (!mesh) return null
+      return { mesh, sourceGroup, destGroup, posDestino: mov.posDestino }
+    })
+    .filter(Boolean)
+
+  if (!tareas.length) return
+
+  // Remove all moving meshes from their source groups
+  for (const { mesh, sourceGroup } of tareas) {
+    const idx = sourceGroup.userData.clientes.indexOf(mesh)
+    if (idx !== -1) sourceGroup.userData.clientes.splice(idx, 1)
+    sourceGroup.remove(mesh)
+  }
+
+  // Group arrivals by destination and process in ascending posDestino order
+  const byDest = new Map()
+  for (const tarea of tareas) {
+    if (!byDest.has(tarea.destGroup)) byDest.set(tarea.destGroup, [])
+    byDest.get(tarea.destGroup).push(tarea)
+  }
+
+  for (const [destGroup, arrivals] of byDest) {
+    arrivals.sort((a, b) => a.posDestino - b.posDestino)
+    for (const { mesh, sourceGroup, posDestino } of arrivals) {
+      // Convert mesh's former local position in sourceGroup to destGroup local space.
+      // Groups are direct scene children with only translation, so world = group.pos + local.
+      const localStart = new THREE.Vector3(
+        sourceGroup.position.x + mesh.position.x - destGroup.position.x,
+        mesh.position.y,
+        sourceGroup.position.z + mesh.position.z - destGroup.position.z,
+      )
+      mesh.position.copy(localStart)
+      destGroup.add(mesh)
+      destGroup.userData.clientes.splice(posDestino, 0, mesh)
+      startAnimation(mesh, localStart.clone(), computeClientPos(posDestino), 0.025, easeInOut, null)
+    }
+  }
+}
+
 // Incremental update with entry / exit animations — used for live changes.
 export function sincronizarCola(grupo, cola) {
   const existentes = grupo.userData.clientes

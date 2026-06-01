@@ -87,6 +87,7 @@ import {
   renderizarCajas,
   syncScene,
   tickAnimations,
+  animarReubicacionColas,
 } from '@/composables/useCajasScene.js'
 import { simulationSpeed } from '@/models/simulacionConfig.js'
 import { initCameraControls } from '@/composables/useCameraControls.js'
@@ -314,6 +315,15 @@ watch(mostrarReferenciasEspaciales, (val) => {
 watch(cameraMode, (mode) => {
   if (camControls) camControls.setMode(mode)
 })
+
+// Register the rebalancing hook so nivelarColas triggers lateral animations.
+watch(
+  () => props.simulacion,
+  (sim) => {
+    if (sim) sim._onNivelarColas = (movimientos) => animarReubicacionColas(cajasMesh, movimientos)
+  },
+  { immediate: true },
+)
 
 // Rebuild cajas only when their count changes (e.g. a new caja is added/removed).
 watch(

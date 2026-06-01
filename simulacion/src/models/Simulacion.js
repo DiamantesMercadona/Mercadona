@@ -102,11 +102,12 @@ class Simulacion {
     const cajasAbiertas = this.cajas.filter((c) => c.abierta)
     if (cajasAbiertas.length < 2) return
 
-    // Extraer todos los clientes en espera (índice ≥ 1) de todas las cajas abiertas
+    // Recoger todos los clientes en espera (índice ≥ 1) con su posición de origen
     const enEspera = []
     for (const caja of cajasAbiertas) {
-      if (caja.cola.length > 1) {
-        enEspera.push(...caja.cola.splice(1))
+      const cajaOrigenIdx = this.cajas.indexOf(caja)
+      for (let pos = 1; pos < caja.cola.length; pos++) {
+        enEspera.push({ cliente: caja.cola[pos], cajaOrigenIdx, posOrigen: pos })
       }
     }
     if (enEspera.length === 0) return
@@ -114,11 +115,37 @@ class Simulacion {
     // Priorizar las colas más cortas en el reparto (round-robin ordenado)
     const cajasOrdenadas = [...cajasAbiertas].sort((a, b) => a.cola.length - b.cola.length)
 
+    // Calcular movimientos y destinos antes de tocar los datos
+    // posDestino inicial = 1 si la caja tiene cliente siendo atendido, 0 si está vacía
+    const destCounter = new Map(
+      cajasAbiertas.map((c) => [this.cajas.indexOf(c), Math.min(1, c.cola.length)]),
+    )
+    const movimientos = []
+    for (let i = 0; i < enEspera.length; i++) {
+      const caja = cajasOrdenadas[i % cajasOrdenadas.length]
+      const cajaDestinoIdx = this.cajas.indexOf(caja)
+      const posDestino = destCounter.get(cajaDestinoIdx)
+      movimientos.push({
+        cajaOrigenIdx: enEspera[i].cajaOrigenIdx,
+        posOrigen: enEspera[i].posOrigen,
+        cajaDestinoIdx,
+        posDestino,
+      })
+      destCounter.set(cajaDestinoIdx, posDestino + 1)
+    }
+
+    // Notificar al sistema 3D ANTES de modificar los datos para que pre-actualice
+    // los arrays userData.clientes — cuando sincronizarCola se ejecute después no verá diff
+    this._onNivelarColas?.(movimientos)
+
+    // Aplicar cambios en el modelo de datos
+    for (const caja of cajasAbiertas) {
+      if (caja.cola.length > 1) caja.cola.splice(1)
+    }
     for (let i = 0; i < enEspera.length; i++) {
       const caja = cajasOrdenadas[i % cajasOrdenadas.length]
       const eraVacia = caja.cola.length === 0
-      caja.cola.push(enEspera[i])
-      // Si la caja estaba vacía arrancamos la cadena de timeouts de atención
+      caja.cola.push(enEspera[i].cliente)
       if (eraVacia) caja.removeClienteTimeout()
     }
 
