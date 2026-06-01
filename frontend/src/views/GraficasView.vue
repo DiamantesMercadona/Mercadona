@@ -92,11 +92,14 @@ const generateMockMetrics = () => {
     })
   }
 
-  // 2. Individual boxes: Caja 1, Caja 2, Caja 3: every 60 seconds
+  // 2. Individual boxes: Caja 1 to Caja 6: every 60 seconds
   const boxes = [
     { name: '1', factor: 1.1, offset: 5 },
     { name: '2', factor: 0.95, offset: -5 },
-    { name: '3', factor: 0.8, offset: -15 }
+    { name: '3', factor: 0.8, offset: -15 },
+    { name: '4', factor: 1.05, offset: 2 },
+    { name: '5', factor: 0.9, offset: -8 },
+    { name: '6', factor: 0.75, offset: -20 }
   ]
 
   for (const box of boxes) {

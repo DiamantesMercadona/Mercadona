@@ -19,7 +19,7 @@ yarn-error.log*
 *.vite
 
 # SQLite databases
-*.db
+# *.db  # Comentado con motivo de la demo
 *.db-journal
 *.sqlite3
 
