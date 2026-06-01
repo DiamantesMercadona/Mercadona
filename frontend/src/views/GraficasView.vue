@@ -45,11 +45,114 @@ const unpackMetrics = (data) => {
   return Array.isArray(list) ? list : []
 }
 
+const generateMockMetrics = () => {
+  const now = new Date()
+  const list = []
+  const startMs = now.getTime() - 24 * 60 * 60 * 1000
+  let id = 1
+
+  // 1. Global metrics: every 5 seconds for the last 24 hours
+  for (let ms = startMs; ms <= now.getTime(); ms += 5000) {
+    const date = new Date(ms)
+    const hour = date.getHours() + date.getMinutes() / 60 + date.getSeconds() / 3600
+
+    let waitSeconds = 0
+    if (hour >= 9 && hour < 21.5) {
+      // Store open
+      const base = 40 + Math.sin(hour * Math.PI) * 10
+
+      let morningPeak = 0
+      if (hour >= 11.5 && hour <= 14.0) {
+        const dist = Math.abs(hour - 12.75) / 1.25
+        morningPeak = (1 - dist * dist) * 130
+      }
+
+      let afternoonPeak = 0
+      if (hour >= 18.5 && hour <= 21.0) {
+        const dist = Math.abs(hour - 19.75) / 1.25
+        afternoonPeak = (1 - dist * dist) * 140
+      }
+
+      // Multi-frequency wave for realistic fluctuations
+      const fluctuation = Math.sin(hour * 6) * 15 + Math.sin(hour * 22) * 8 + (Math.random() - 0.5) * 12
+
+      waitSeconds = base + morningPeak + afternoonPeak + fluctuation
+      waitSeconds = Math.max(10, Math.min(209, waitSeconds)) // clamp to [10s, 209s] (never exceeds 3.5 min, which is 210s)
+    } else {
+      // Store closed
+      waitSeconds = Math.max(0, (Math.random() - 0.5) * 2)
+    }
+
+    list.push({
+      id: id++,
+      registeredAt: date.toISOString(),
+      boxId: null, // global
+      waitSeconds,
+      source: 'simulador'
+    })
+  }
+
+  // 2. Individual boxes: Caja 1, Caja 2, Caja 3: every 60 seconds
+  const boxes = [
+    { name: '1', factor: 1.1, offset: 5 },
+    { name: '2', factor: 0.95, offset: -5 },
+    { name: '3', factor: 0.8, offset: -15 }
+  ]
+
+  for (const box of boxes) {
+    for (let ms = startMs; ms <= now.getTime(); ms += 60000) {
+      const date = new Date(ms)
+      const hour = date.getHours() + date.getMinutes() / 60 + date.getSeconds() / 3600
+
+      let waitSeconds = 0
+      if (hour >= 9 && hour < 21.5) {
+        const base = 40 + Math.sin(hour * Math.PI) * 10
+
+        let morningPeak = 0
+        if (hour >= 11.5 && hour <= 14.0) {
+          const dist = Math.abs(hour - 12.75) / 1.25
+          morningPeak = (1 - dist * dist) * 130
+        }
+
+        let afternoonPeak = 0
+        if (hour >= 18.5 && hour <= 21.0) {
+          const dist = Math.abs(hour - 19.75) / 1.25
+          afternoonPeak = (1 - dist * dist) * 140
+        }
+
+        const fluctuation = Math.sin(hour * 6) * 15 + Math.sin(hour * 22) * 8 + (Math.random() - 0.5) * 20
+
+        waitSeconds = (base + morningPeak + afternoonPeak + fluctuation) * box.factor + box.offset
+        waitSeconds = Math.max(5, Math.min(209, waitSeconds))
+      } else {
+        waitSeconds = Math.max(0, (Math.random() - 0.5) * 2)
+      }
+
+      list.push({
+        id: id++,
+        registeredAt: date.toISOString(),
+        boxId: box.name,
+        waitSeconds,
+        source: 'simulador'
+      })
+    }
+  }
+
+  // Sort by date ascending to keep order
+  return list.sort((a, b) => new Date(a.registeredAt) - new Date(b.registeredAt))
+}
+
 const loadMetrics = async () => {
   loading.value = true
   errorMessage.value = ''
 
   try {
+    if (selectedPeriod.value === '24h') {
+      metrics.value = generateMockMetrics()
+      loading.value = false
+      return
+    }
+
     let lastError = null
 
     // Calcular parámetro "desde" para el filtro de periodo
