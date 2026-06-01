@@ -5,7 +5,7 @@ import { ref } from 'vue'
 /** Factor de velocidad de la simulación (slider hasta 20x).
  *  Los timeouts que ya se han programado no se ven afectados, pero los nuevos sí.
  */
-export const simulationSpeed = ref(10)
+export const simulationSpeed = ref(1)
 
 //  Comportamiento de colas
 
@@ -30,8 +30,8 @@ export const MAX_CLIENTS_EVENT = 4
 //  Tiempo de servicio en caja
 
 /** Cesta pequeña (sin carrito): 2–4 min. */
-export const MIN_TIME_CAJA = 120
-export const MAX_TIME_CAJA = 240
+export const MIN_TIME_CAJA = 12
+export const MAX_TIME_CAJA = 12
 
 /** Carrito completo: 5–10 min. */
 export const MIN_TIME_CAJA_CARRITO = 300

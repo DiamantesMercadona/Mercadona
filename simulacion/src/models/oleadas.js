@@ -5,9 +5,19 @@
  * - `delay`: segundos hasta la siguiente oleada (afectado por el factor de velocidad).
  */
 export const oleadas = [
-  { clientes: 9, delay: 60 },
-  { clientes: 3, delay: 90 },
-  { clientes: 7, delay: 75 },
-  { clientes: 16, delay: 45 },
-  { clientes: 4, delay: 120 },
+  // Apertura — llegada gradual
+  { clientes: 0, delay: 15 },
+  { clientes: 1, delay: 7 },
+  { clientes: 2, delay: 6 },
+  { clientes: 2, delay: 6 },
+  // Incremento progresivo
+  { clientes: 3, delay: 5 },
+  { clientes: 3, delay: 5 },
+  // Hora punta — colas largas, se abren nuevas cajas
+  { clientes: 7, delay: 4 },
+  // Bajada progresiva
+  { clientes: 3, delay: 6 },
+  { clientes: 2, delay: 6 },
+  { clientes: 1, delay: 7 },
+  { clientes: 0, delay: 8 },
 ]

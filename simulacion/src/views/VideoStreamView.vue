@@ -11,18 +11,24 @@
           <span class="caja-id">Caja {{ caja.id }}</span>
           <span class="estado-dot" :class="caja.estado" :title="caja.estado"></span>
           <span class="estado-label">{{ caja.estado }}</span>
-          <button 
-            :disabled="caja.estado === 'activa' || cajaAccionCargando !== null" 
+          <button
+            :disabled="caja.estado === 'activa' || cajaAccionCargando !== null"
             @click="setCajaEstado(caja.id, 'activa')"
           >
-            <span v-if="cajaAccionCargando?.id === caja.id && cajaAccionCargando?.estado === 'activa'" class="btn-spinner"></span>
+            <span
+              v-if="cajaAccionCargando?.id === caja.id && cajaAccionCargando?.estado === 'activa'"
+              class="btn-spinner"
+            ></span>
             <span v-else>Abrir</span>
           </button>
-          <button 
-            :disabled="caja.estado === 'cerrada' || cajaAccionCargando !== null" 
+          <button
+            :disabled="caja.estado === 'cerrada' || cajaAccionCargando !== null"
             @click="setCajaEstado(caja.id, 'cerrada')"
           >
-            <span v-if="cajaAccionCargando?.id === caja.id && cajaAccionCargando?.estado === 'cerrada'" class="btn-spinner"></span>
+            <span
+              v-if="cajaAccionCargando?.id === caja.id && cajaAccionCargando?.estado === 'cerrada'"
+              class="btn-spinner"
+            ></span>
             <span v-else>Cerrar</span>
           </button>
         </div>

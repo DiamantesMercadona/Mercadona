@@ -32,7 +32,7 @@
     </button>
     <span v-if="isRecordingVideo" class="recording-time">{{ recordingElapsedLabel }}</span>
     <button @click="downloadFrame" class="btn-download">Descargar frame</button>
-    <RouterLink to="/video-stream" class="btn-backend-test">Video stream</RouterLink>
+    <!-- <RouterLink to="/video-stream" class="btn-backend-test">Video stream</RouterLink> -->
   </div>
 
   <!-- Tooltips for cajas -->
